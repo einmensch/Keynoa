@@ -1,3 +1,3 @@
 # numduino
-A Mechanical (Ar/Ge)duino based Numpad
-firmware is made for arduino Leonardo
+A Mechanical (Ar/Ge)duino based Numpad.  
+The firmware is made for the Arduino Leonardo
