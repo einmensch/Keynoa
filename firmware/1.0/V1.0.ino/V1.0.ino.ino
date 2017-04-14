@@ -1,5 +1,5 @@
+// 1\1 1_1 1\/1 duino
 #include <Keyboard.h>
-
 #define ofLayers 2//set the number of layers, the number has to match the number of entries in the first dimension in the matrices array
 #define ofRows   4//set the number of rows, the number has to match the number of entries in the second dimension in the matrices array and the number of entries in the input array
 #define ofColumns 5//set the number of columns, the number has to match the number of entries in the third dimension in the matrices array and the number of entries in the output array
@@ -37,6 +37,8 @@ byte modifyer[ofMods]={byte(1)};//the symbol you put here should be one you don'
                                   //and the arduino libary form 0 to 255. put the same number/symbol into your layout at the poin in which you want to have the modifyer
 long modifyerprime[ofMods]={2};// just put in as many prime numbers as you have modifyers
 bool modifyerpersistence[ofMods]={true};//set wich modifyers lock and wich are only active if you hold them
+bool modifyerlocklight[ofMods]={true};
+int modifyerlocklightpin[ofMods]={13};
 
 //the part where you may have to make changes to make this work for your keyboard and change the keyboard layout ends here
 
@@ -48,6 +50,9 @@ long persistentlayer = 1;
 byte lastmod=100;
 bool none =true;
 void setup() {
+  for(int i=0; i<ofMods;i++){
+    pinMode(modifyerlocklightpin[i], OUTPUT);
+  }
   //Serial.begin(9600);
   Keyboard.begin();
   for(int i=0;i < ofColumns; i++){
@@ -73,16 +78,24 @@ void loop(){
         none=false;
         for(int k=0; k< ofMods; k++){
           if (modifyer[k] ==matrices[currentlayeractual][i][j] and modifyer[k]!= lastmod){
-            lastmod=modifyer[k];
-            if (modifyerpersistence[k]=false){
+            
+            if (modifyerpersistence[k]==false){
               currentlayer*=modifyerprime[k];
             }
             else if (persistentlayer%modifyerprime[k]!=0){
+              lastmod=modifyer[k];
               currentlayer*=modifyerprime[k];
               persistentlayer*=modifyerprime[k];
+              if (modifyerlocklight[k]==true){
+                  digitalWrite(modifyerlocklightpin[k],HIGH);
+              }
             }
             else{
+              lastmod=modifyer[k];
               persistentlayer/=modifyerprime[k];
+              if (modifyerlocklight[k]==true){
+                digitalWrite(modifyerlocklightpin[k],LOW);
+              }
             }
           }
         }
@@ -113,7 +126,7 @@ void checkbuttons(byte matrix[5][4]) {
       state = digitalRead(input[j]);
       if (state == LOW) {
         Keyboard.press(matrix[i][j]);
-        delay(10);
+        delay(20);
         switchmatrix[i][j]=true;
       }
       else if(switchmatrix[i][j]==true){
