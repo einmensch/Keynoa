@@ -1,4 +1,3 @@
-// 1\1 1_1 1\/1 duino
 #include <Keyboard.h>
 #define ofLayers 2//set the number of layers, the number has to match the number of entries in the first dimension in the matrices array
 #define ofRows   4//set the number of rows, the number has to match the number of entries in the second dimension in the matrices array and the number of entries in the input array
