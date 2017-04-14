@@ -1,2 +1,2 @@
 # Keynoa  
-A basic Keybard firmware
+A basic keybard firmware
