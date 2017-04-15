@@ -11,17 +11,17 @@ byte matrices[ofLayers][ofColumns][ofRows] = {{//this is the keyboard layout. pu
                                                //the buttons are send based on the Qwerty layout 
                                                //so if you use a different one on you computer you have to look which
                                                //button is at the position on the US layout where the button you want is on your layout
-  {byte(1) , byte('&'), byte('}'), byte('/') }, //L2  /   *   -
-  {byte('7') , byte('8'), byte('9'), byte(']') }, //7   8   9   +
-  {byte('4') , byte('5'), byte('6'),      0    }, //4   5   6
-  {byte('1') , byte('2'), byte('3'), byte('\n')}, //1   2   3   Enter
-  {byte('0') ,     0    , byte('.'),      0    }  //0       .
+  {byte(1) , byte('&'), byte('}'), byte('/') },
+  {byte('7') , byte('8'), byte('9'), byte(']') },
+  {byte('4') , byte('5'), byte('6'),      0    },
+  {byte('1') , byte('2'), byte('3'), byte('\n')},
+  {byte('0') ,     0    , byte('.'),      0    }
 },{
-  {byte(1) , byte('&'), byte('}'), byte('/') }, //L2 !F2!!Tab! -
-  {byte('7') , byte('8'), byte('9'), byte(']') }, //7   8    9   +
-  {byte('4') , byte('5'), byte('6'),      0    }, //6   5    6
-  {byte('1') , byte('2'), byte('3'), byte(')') }, //1   2    3   =   )
-  {byte('0') ,     0    , byte(','),      0    }  //0        ,
+  {byte(1) , byte('&'), byte('}'), byte('/') },
+  {byte('7') , byte('8'), byte('9'), byte(']') },
+  {byte('4') , byte('5'), byte('6'),      0    },
+  {byte('1') , byte('2'), byte('3'), byte(')') },
+  {byte('0') ,     0    , byte(','),      0    }
 }
 };
 
