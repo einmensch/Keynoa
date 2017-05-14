@@ -6,23 +6,41 @@
 
 int input[ofRows] = {10, 9, 8, 7};//put in the pin numbers you use for the input from the first Row to the last
 int output[ofColumns] = {2, 3, 4, 5, 6};//put in the pins you use for the output from the left column to the right
-byte matrices[ofLayers][ofColumns][ofRows] = {{//this is the keyboard layout. put in the characters that you want to have and convert it to a byte. 
-                                               //the first dimension is the layer the second one the column and the third one the row
+String matrices[ofLayers][ofColumns][ofRows] = {{//this is the keyboard layout. put in the characters that you want to have and convert it to a byte. 
+                                               //the first dimensionfunctions is the layer the second one the column and the third one the row
                                                //the buttons are send based on the Qwerty layout 
                                                //so if you use a different one on you computer you have to look which
                                                //button is at the position on the US layout where the button you want is on your layout
-  {byte(1) , byte('&'), byte('}'), byte('/') },
-  {byte('7') , byte('8'), byte('9'), byte(']') },
-  {byte('4') , byte('5'), byte('6'),      0    },
-  {byte('1') , byte('2'), byte('3'), byte('\n')},
-  {byte('0') ,     0    , byte('.'),      0    }
+                                               //put String(char(0)) at the positions that you do not want to use or are in use by a modifyer
+  { String(char(0)) , "&", "}", "/" },
+  {"7" , "8", "9", "]" },
+  {"4" , "5", "6",  String(char(0))  },
+  {"1" , "2", "3","\n" },
+  {"0" ,  String(char(0)) , ".",  String(char(0))  }
 },{
-  {byte(1) , byte('&'), byte('}'), byte('/') },
-  {byte('7') , byte('8'), byte('9'), byte(']') },
-  {byte('4') , byte('5'), byte('6'),      0    },
-  {byte('1') , byte('2'), byte('3'), byte(')') },
-  {byte('0') ,     0    , byte(','),      0    }
+  { String(char(0)) ,  "&", "}", "/" },
+  {"7" , "8", "9", "]" },
+  {"4" , "5", "6",  String(char(0))  },
+  {"1" ,"2" , "3" ,")" },
+  {"0" , String(char(0))  , "," , String(char(0))  }
 }
+};
+
+byte modmatrices[ofLayers][ofColumns][ofRows] = {//put in the modifyernumbers here at the positions at wich you want them
+  {
+  {1,0,0,0},
+  {0,0,0,0},
+  {0,0,0,0},
+  {0,0,0,0},
+  {0,0,0,0},
+  },
+  {
+  {1,0,0,0},
+  {0,0,0,0},
+  {0,0,0,0},
+  {0,0,0,0},
+  {0,0,0,0}
+  }
 };
 
 bool switchmatrix[ofColumns][ofRows]{
@@ -32,16 +50,15 @@ bool switchmatrix[ofColumns][ofRows]{
 long layerprimecombo[ofLayers]={1,2};//put the number, that equals all the prime numbers that sould be active to trigger the layer multiplyed, here
 
 //the number of the entrys in all the following arreys has to match the ofMods constant
-byte modifyer[ofMods]={byte(1)};//the symbol you put here should be one you don't use on your keyboard if you don't have any unused characters you can use a number not mapped by ascii
-                                  //and the arduino libary form 0 to 255. put the same number/symbol into your layout at the poin in which you want to have the modifyer
+byte modifyer[ofMods]={byte(1)};//the number you put in here is the one you have to put into the modmatrices to use the modifyer
 long modifyerprime[ofMods]={2};// just put in as many prime numbers as you have modifyers
-bool modifyerpersistence[ofMods]={true};//set wich modifyers lock and wich are only active if you hold them
+int modifyerpersistence[ofMods]={1};//set wich modifyers lock and wich are only active if you hold them
 bool modifyerlocklight[ofMods]={true};
 int modifyerlocklightpin[ofMods]={13};
 
 //the part where you may have to make changes to make this work for your keyboard and change the keyboard layout ends here
 
-
+byte tabmod = 1;
 bool state = 0;
 long currentlayer = 1;
 long currentlayeractual = 0;
@@ -63,7 +80,52 @@ void setup() {
     digitalWrite(output[i], HIGH);}
 }
 
+void checkbuttons(long layer) {
+  for (int i = 0; i < ofColumns; i++) {
+    //Serial.print("Micro");
+    digitalWrite(output[i], LOW);
+    for (int j = 0; j < ofRows; j++) {
+      state = digitalRead(input[j]);
+      if (state == LOW) {
+        pushbutton(matrices[layer][i][j],true);
+        delay(20);
+        switchmatrix[i][j]=true;
+      }
+      else if(switchmatrix[i][j]==true){
+        pushbutton(matrices[layer][i][j],false);
+        switchmatrix[i][j]=false;
+        if( tabmod != 1){
+          persistentlayer /=tabmod;
+          tabmod=1;
+          }
+        }
+      }
+    digitalWrite(output[i], HIGH);
+  }
+}
 
+void pushbutton(String input,bool state){
+  if(state){
+    if (input.length()==1){
+      Keyboard.press(input[0]);
+    }
+    else{
+      for(int i =0; i<input.length(); i++){
+        Keyboard.press(input[i]);
+        Keyboard.release(input[i]);
+      }
+      delay(100);
+    }
+  }
+  else{
+    if(input.length()==1){
+      Keyboard.release(input[0]);
+    }
+    else{
+      return;
+    }
+  }
+}
 
 void loop(){
   none=true;
@@ -76,12 +138,15 @@ void loop(){
       if (state == LOW) {
         none=false;
         for(int k=0; k< ofMods; k++){
-          if (modifyer[k] ==matrices[currentlayeractual][i][j] and modifyer[k]!= lastmod){
+          if (modifyer[k] ==modmatrices[currentlayeractual][i][j] and modifyer[k]!= lastmod){
             
-            if (modifyerpersistence[k]==false){
+            if (modifyerpersistence[k]==0){
               currentlayer*=modifyerprime[k];
             }
             else if (persistentlayer%modifyerprime[k]!=0){
+              if (modifyerpersistence[k] == 2){
+                tabmod=modifyerprime[k];
+              }
               lastmod=modifyer[k];
               currentlayer*=modifyerprime[k];
               persistentlayer*=modifyerprime[k];
@@ -111,28 +176,5 @@ void loop(){
       break;
     }
   }
-  Serial.print(currentlayeractual);
-  checkbuttons(matrices[currentlayeractual]);
-}
-
-
-
-void checkbuttons(byte matrix[5][4]) {
-  for (int i = 0; i < ofColumns; i++) {
-    //Serial.print("Micro");
-    digitalWrite(output[i], LOW);
-    for (int j = 0; j < ofRows; j++) {
-      state = digitalRead(input[j]);
-      if (state == LOW) {
-        Keyboard.press(matrix[i][j]);
-        delay(20);
-        switchmatrix[i][j]=true;
-      }
-      else if(switchmatrix[i][j]==true){
-        Keyboard.release(matrix[i][j]);
-        switchmatrix[i][j]=false;
-        }
-      }
-    digitalWrite(output[i], HIGH);
-  }
+  checkbuttons(currentlayeractual);
 }
